@@ -1,5 +1,5 @@
 bindAddr: 0.0.0.0:8000  # string 用于提供http api的绑定地址
 
-mongodb:
-  url:    # string 数据库连接
-  database: go-restful-template  # string 数据库名
+mongo:
+  url:   mongodb://ZcT2RS8hzZvT:GkOpDuMipmJBfCxZwU6VMW@124.223.36.219:27017 # string 数据库连接
+  database: fiber-realworld # string 数据库名

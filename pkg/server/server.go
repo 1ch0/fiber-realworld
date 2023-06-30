@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/1ch0/fiber-realworld/pkg/server/infrastructure/mongodb"
+
 	"github.com/1ch0/fiber-realworld/pkg/server/domain/service"
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
@@ -22,13 +24,15 @@ type Server interface {
 type restServer struct {
 	webContainer  *fiber.App
 	beanContainer *container.Container
+	mongo         mongodb.MongoDB
 	cfg           config.Config
 }
 
 func New(cfg config.Config) Server {
 	return &restServer{
-		webContainer: newFiber(),
-		cfg:          cfg,
+		webContainer:  newFiber(),
+		beanContainer: container.NewContainer(),
+		cfg:           cfg,
 	}
 }
 
@@ -48,7 +52,29 @@ func newFiber() *fiber.App {
 }
 
 func (r *restServer) buildIoCContainer() (err error) {
-	r.beanContainer = container.NewContainer()
+	// infrastructure
+	if err := r.beanContainer.ProvideWithName("RestServer", r); err != nil {
+		return fmt.Errorf("fail to provides the RestServer bean to the container: %w", err)
+	}
+
+	var mongo mongodb.MongoDB
+	if mongo, err = mongodb.New(context.Background(), r.cfg.Mongo); err != nil {
+		return fmt.Errorf("fail to init mongodb %w", err)
+	}
+	r.mongo = mongo
+	if err := r.beanContainer.ProvideWithName("mongo", r.mongo); err != nil {
+		return fmt.Errorf("fail to provides the mongodb bean to the container: %w", err)
+	}
+
+	// domain
+	if err := r.beanContainer.Provides(service.InitServiceBean(r.cfg)...); err != nil {
+		return fmt.Errorf("fail to provides the service bean to the container: %w", err)
+	}
+
+	// interfaces
+	if err := r.beanContainer.Provides(api.InitAPIBean()...); err != nil {
+		return fmt.Errorf("fail to provides the api bean to the container: %w", err)
+	}
 
 	if err = r.beanContainer.Populate(); err != nil {
 		return fmt.Errorf("fail to provides the event bean to the container: %w", err)

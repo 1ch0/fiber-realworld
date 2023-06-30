@@ -4,6 +4,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+const versionPrefix = "/api"
+
 type Interface interface {
 	Register(app *fiber.App)
 }
@@ -21,6 +23,7 @@ func GetRegisteredAPI() []Interface {
 
 func InitAPIBean() []interface{} {
 	RegisterAPI(NewHelloApi())
+	RegisterAPI(NewUserApi())
 
 	var beans []interface{}
 	for i := range registeredAPI {

@@ -13,9 +13,8 @@ const RoleAdmin = "admin"
 // User is the model of user
 type User struct {
 	BaseModel
-	Name     string `json:"name" gorm:"primaryKey"`
+	Name     string `json:"username" gorm:"primaryKey"`
 	Email    string `json:"email"`
-	Alias    string `json:"alias,omitempty"`
 	Password string `json:"password,omitempty"`
 }
 
