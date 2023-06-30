@@ -1,0 +1,5 @@
+bindAddr: 0.0.0.0:8000  # string 用于提供http api的绑定地址
+
+mongodb:
+  url:    # string 数据库连接
+  database: go-restful-template  # string 数据库名
