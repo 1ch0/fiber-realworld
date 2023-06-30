@@ -6,15 +6,13 @@ import (
 
 	"github.com/1ch0/fiber-realworld/pkg/server/infrastructure/mongodb"
 
+	"github.com/1ch0/fiber-realworld/pkg/server/config"
 	"github.com/1ch0/fiber-realworld/pkg/server/domain/service"
+	"github.com/1ch0/fiber-realworld/pkg/server/interfaces/api"
+	"github.com/1ch0/fiber-realworld/pkg/server/utils/container"
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/recover"
-
-	"github.com/1ch0/fiber-realworld/pkg/server/config"
-	"github.com/1ch0/fiber-realworld/pkg/server/interfaces/api"
-	"github.com/1ch0/fiber-realworld/pkg/server/utils/container"
 )
 
 type Server interface {
@@ -38,7 +36,7 @@ func New(cfg config.Config) Server {
 
 func newFiber() *fiber.App {
 	app := fiber.New(fiber.Config{
-		Prefork:       true,
+		Prefork:       false,
 		CaseSensitive: true, // 区分大小写
 		StrictRouting: true, // 严格路由
 		ServerHeader:  "Fiber Template",
@@ -46,7 +44,7 @@ func newFiber() *fiber.App {
 		JSONEncoder:   sonic.Marshal,
 		JSONDecoder:   sonic.Unmarshal,
 	})
-	app.Use(recover.New())
+	//app.Use(recover.New())
 	app.Use(logger.New(logger.Config{TimeFormat: "2006-01-02 15:04:05", TimeZone: "Asia/Shanghai"}))
 	return app
 }

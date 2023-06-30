@@ -27,7 +27,8 @@ func InitData(ctx context.Context) error {
 // InitServiceBean init all service instance
 func InitServiceBean(c config.Config) []interface{} {
 	userService := NewUserService()
+	authenticationService := NewAuthenticationService()
 	//needInitData = []DataInit{userService}
-	return []interface{}{userService}
+	return []interface{}{userService, authenticationService}
 
 }

@@ -1,5 +1,7 @@
 package model
 
+import "github.com/golang-jwt/jwt/v5"
+
 func init() {
 	RegisterModel(&User{})
 }
@@ -30,7 +32,7 @@ func (u *User) ShortTableName() string {
 
 // PrimaryKey return custom primary key
 func (u *User) PrimaryKey() string {
-	return u.Name
+	return u.Email
 }
 
 // Index return custom index
@@ -44,4 +46,11 @@ func (u *User) Index() map[string]interface{} {
 	}
 
 	return index
+}
+
+// CustomClaims is the custom claims
+type CustomClaims struct {
+	Email     string `json:"email"`
+	GrantType string `json:"grantType"`
+	jwt.RegisteredClaims
 }
