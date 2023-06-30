@@ -68,15 +68,14 @@ func (a *authenticationServiceImpl) Login(c *fiber.Ctx, req apisv1.LoginRequest)
 	if err != nil {
 		return err
 	}
-	refreshToken, err := a.generateJWTToken(userBase.Email, GrantTypeAccess, time.Hour*24)
-	if err != nil {
-		return err
-	}
 	return c.JSON(apisv1.LoginResponse{
-		User:         userBase,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	})
+		User: apisv1.LoginUser{
+			Email: userBase.Email,
+			Name:  userBase.Name,
+			Bio:   "",
+			Image: "",
+			Token: accessToken,
+		}})
 }
 
 func (a *authenticationServiceImpl) login(c *fiber.Ctx, req apisv1.LoginRequest) (*apisv1.UserBase, error) {
@@ -84,8 +83,8 @@ func (a *authenticationServiceImpl) login(c *fiber.Ctx, req apisv1.LoginRequest)
 		return nil, bcode.New(c, bcode.ErrInvalidRequest)
 	}
 	userBase, err := a.UserService.GetUser(c, req.User.Email)
-	if err != nil {
-		return nil, err
+	if err != nil || userBase == nil {
+		return nil, bcode.ReturnError(c, errors.New("user not found"))
 	}
 
 	if err := CompareHashWithPassword(userBase.Password, req.User.Password); err != nil {

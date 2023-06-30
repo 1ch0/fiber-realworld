@@ -9,9 +9,15 @@ type LoginRequest struct {
 
 // LoginResponse is the response of login request
 type LoginResponse struct {
-	User         *UserBase `json:"user"`
-	AccessToken  string    `json:"accessToken"`
-	RefreshToken string    `json:"refreshToken"`
+	User LoginUser `json:"user"`
+}
+
+type LoginUser struct {
+	Email string `json:"email"`
+	Name  string `json:"username"`
+	Bio   string `json:"bio"`
+	Image string `json:"image"`
+	Token string `json:"token"`
 }
 
 // RefreshTokenResponse is the response of refresh token request
@@ -29,6 +35,6 @@ type CreateUserRequest struct {
 }
 
 type UserBase struct {
-	Name  string `json:"username" gorm:"primaryKey"`
+	Name  string `json:"username"`
 	Email string `json:"email"`
 }
