@@ -18,6 +18,8 @@ type User struct {
 	Name     string `json:"username" gorm:"primaryKey"`
 	Email    string `json:"email"`
 	Password string `json:"password,omitempty"`
+	Bio      string `json:"bio"`
+	Image    string `json:"image"`
 }
 
 // TableName return custom table name

@@ -16,13 +16,15 @@ func NewUserApi() Interface {
 }
 
 func (u *user) Register(app *fiber.App) {
-	api := app.Group(versionPrefix + "/users")
-	api.Post("", u.CreateUser)
-	api.Post("/login", u.login)
+	api := app.Group(versionPrefix)
+	api.Post("users", u.CreateUser)
+	api.Post("/users/login", u.login)
+	api.Get("/user", u.CurrentUser)
+	api.Put("/user", u.UpdateUser)
 }
 
 func (u *user) CreateUser(c *fiber.Ctx) error {
-	var req apiv1.CreateUserRequest
+	var req apiv1.UserRequest
 	if err := c.BodyParser(&req); err != nil {
 		return err
 	}
@@ -35,4 +37,16 @@ func (u *user) login(c *fiber.Ctx) error {
 		return err
 	}
 	return u.AuthenticationService.Login(c, req)
+}
+
+func (u *user) CurrentUser(c *fiber.Ctx) error {
+	return u.AuthenticationService.CurrentUser(c)
+}
+
+func (u *user) UpdateUser(c *fiber.Ctx) error {
+	var req apiv1.UserRequest
+	if err := c.BodyParser(&req); err != nil {
+		return err
+	}
+	return u.UserService.UpdateUser(c, req)
 }

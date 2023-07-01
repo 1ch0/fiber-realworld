@@ -26,11 +26,13 @@ type RefreshTokenResponse struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
-type CreateUserRequest struct {
+type UserRequest struct {
 	User struct {
 		Name     string `form:"username" json:"username" binding:"exists,min=4,max=255"`
 		Email    string `form:"email" json:"email" binding:"exists,email"`
 		Password string `form:"password" json:"password" binding:"exists,min=8,max=255"`
+		Bio      string `json:"bio"`
+		Image    string `json:"image"`
 	} `json:"user"`
 }
 

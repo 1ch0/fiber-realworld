@@ -19,6 +19,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -47,6 +48,9 @@ type AuthenticationService interface {
 	Login(c *fiber.Ctx, loginReq apisv1.LoginRequest) error
 	RefreshToken(c *fiber.Ctx, refreshToken string) (*apisv1.RefreshTokenResponse, error)
 	login(c *fiber.Ctx, req apisv1.LoginRequest) (*apisv1.UserBase, error)
+	CurrentUser(c *fiber.Ctx) error
+	GetToken(c *fiber.Ctx) (string, error)
+	GenerateJWTToken(email, grantType string, expireDuration time.Duration) (string, error)
 }
 
 type authenticationServiceImpl struct {
@@ -64,7 +68,7 @@ func (a *authenticationServiceImpl) Login(c *fiber.Ctx, req apisv1.LoginRequest)
 	if err != nil {
 		return err
 	}
-	accessToken, err := a.generateJWTToken(userBase.Email, GrantTypeAccess, time.Hour)
+	accessToken, err := a.GenerateJWTToken(userBase.Email, GrantTypeAccess, time.Hour)
 	if err != nil {
 		return err
 	}
@@ -94,7 +98,7 @@ func (a *authenticationServiceImpl) login(c *fiber.Ctx, req apisv1.LoginRequest)
 	return &apisv1.UserBase{Name: userBase.Name, Email: userBase.Email}, nil
 }
 
-func (a *authenticationServiceImpl) generateJWTToken(email, grantType string, expireDuration time.Duration) (string, error) {
+func (a *authenticationServiceImpl) GenerateJWTToken(email, grantType string, expireDuration time.Duration) (string, error) {
 	claims := model.CustomClaims{
 		Email:     email,
 		GrantType: grantType,
@@ -118,11 +122,11 @@ func (a *authenticationServiceImpl) RefreshToken(c *fiber.Ctx, refreshToken stri
 		return nil, err
 	}
 	if claim.GrantType == GrantTypeRefresh {
-		accessToken, err := a.generateJWTToken(claim.Email, GrantTypeRefresh, time.Hour)
+		accessToken, err := a.GenerateJWTToken(claim.Email, GrantTypeRefresh, time.Hour)
 		if err != nil {
 			return nil, err
 		}
-		refreshToken, err = a.generateJWTToken(claim.Email, GrantTypeRefresh, time.Hour*24)
+		refreshToken, err = a.GenerateJWTToken(claim.Email, GrantTypeRefresh, time.Hour*24)
 		if err != nil {
 			return nil, err
 		}
@@ -132,6 +136,41 @@ func (a *authenticationServiceImpl) RefreshToken(c *fiber.Ctx, refreshToken stri
 		}, nil
 	}
 	return nil, err
+}
+
+func (a *authenticationServiceImpl) CurrentUser(c *fiber.Ctx) error {
+	token, err := a.GetToken(c)
+	if err != nil {
+		return bcode.ReturnError(c, err)
+	}
+
+	customClaims, err := ParseToken(token)
+	if err != nil {
+		return bcode.ReturnError(c, err)
+	}
+
+	user, err := a.UserService.GetUser(c, customClaims.Email)
+	if err != nil {
+		return bcode.ReturnError(c, err)
+	}
+	return c.JSON(apisv1.LoginResponse{
+		User: apisv1.LoginUser{
+			Email: user.Email,
+			Name:  user.Name,
+			Bio:   user.Bio,
+			Image: user.Image,
+			Token: token,
+		}})
+}
+
+func (a *authenticationServiceImpl) GetToken(c *fiber.Ctx) (string, error) {
+	token := c.GetReqHeaders()["Authorization"]
+	if token == "" {
+		return "", bcode.ReturnError(c, errors.New("token is empty"))
+	}
+	token = strings.Replace(token, "Token ", "", 1)
+
+	return token, nil
 }
 
 func ParseToken(tokenString string) (*model.CustomClaims, error) {
