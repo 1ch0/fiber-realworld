@@ -12,7 +12,7 @@ const DefaultAdminUserAlias = "Administrator"
 // RoleAdmin admin role
 const RoleAdmin = "admin"
 
-// User is the model of user
+// Article is the model of user
 type User struct {
 	BaseModel
 	Name     string `json:"username" gorm:"primaryKey"`

@@ -41,4 +41,6 @@ var (
 	ErrNoDexConnector = NewBcode(30011, "there is no dex connector")
 	// ErrAdminAlreadyConfigured is the error of admin user is already configured
 	ErrAdminAlreadyConfigured = NewBcode(30030, "admin user is already configured")
+
+	ErrInvalidToken = NewBcode(30012, "invalid token")
 )

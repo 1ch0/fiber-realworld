@@ -40,7 +40,11 @@ func (u *user) login(c *fiber.Ctx) error {
 }
 
 func (u *user) CurrentUser(c *fiber.Ctx) error {
-	return u.AuthenticationService.CurrentUser(c)
+	currentUser, err := u.AuthenticationService.GetCurrentUser(c)
+	if err != nil {
+		return err
+	}
+	return c.Status(fiber.StatusOK).JSON(currentUser)
 }
 
 func (u *user) UpdateUser(c *fiber.Ctx) error {

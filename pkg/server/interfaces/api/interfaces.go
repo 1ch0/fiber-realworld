@@ -13,8 +13,8 @@ type Interface interface {
 var registeredAPI []Interface
 
 // RegisterAPI Register API handler
-func RegisterAPI(ws Interface) {
-	registeredAPI = append(registeredAPI, ws)
+func RegisterAPI(ws ...Interface) {
+	registeredAPI = append(registeredAPI, ws...)
 }
 
 func GetRegisteredAPI() []Interface {
@@ -22,8 +22,7 @@ func GetRegisteredAPI() []Interface {
 }
 
 func InitAPIBean() []interface{} {
-	RegisterAPI(NewHelloApi())
-	RegisterAPI(NewUserApi())
+	RegisterAPI(NewHelloApi(), NewUserApi(), NewArticleApi())
 
 	var beans []interface{}
 	for i := range registeredAPI {

@@ -48,9 +48,10 @@ type AuthenticationService interface {
 	Login(c *fiber.Ctx, loginReq apisv1.LoginRequest) error
 	RefreshToken(c *fiber.Ctx, refreshToken string) (*apisv1.RefreshTokenResponse, error)
 	login(c *fiber.Ctx, req apisv1.LoginRequest) (*apisv1.UserBase, error)
-	CurrentUser(c *fiber.Ctx) error
+	GetCurrentUser(c *fiber.Ctx) (*apisv1.LoginResponse, error)
 	GetToken(c *fiber.Ctx) (string, error)
 	GenerateJWTToken(email, grantType string, expireDuration time.Duration) (string, error)
+	AuthRequired() fiber.Handler
 }
 
 type authenticationServiceImpl struct {
@@ -138,29 +139,29 @@ func (a *authenticationServiceImpl) RefreshToken(c *fiber.Ctx, refreshToken stri
 	return nil, err
 }
 
-func (a *authenticationServiceImpl) CurrentUser(c *fiber.Ctx) error {
+func (a *authenticationServiceImpl) GetCurrentUser(c *fiber.Ctx) (*apisv1.LoginResponse, error) {
 	token, err := a.GetToken(c)
 	if err != nil {
-		return bcode.ReturnError(c, err)
+		return nil, bcode.ReturnError(c, err)
 	}
 
 	customClaims, err := ParseToken(token)
 	if err != nil {
-		return bcode.ReturnError(c, err)
+		return nil, bcode.ReturnError(c, err)
 	}
 
 	user, err := a.UserService.GetUser(c, customClaims.Email)
 	if err != nil {
-		return bcode.ReturnError(c, err)
+		return nil, bcode.ReturnError(c, err)
 	}
-	return c.JSON(apisv1.LoginResponse{
+	return &apisv1.LoginResponse{
 		User: apisv1.LoginUser{
 			Email: user.Email,
 			Name:  user.Name,
 			Bio:   user.Bio,
 			Image: user.Image,
 			Token: token,
-		}})
+		}}, nil
 }
 
 func (a *authenticationServiceImpl) GetToken(c *fiber.Ctx) (string, error) {
@@ -171,6 +172,26 @@ func (a *authenticationServiceImpl) GetToken(c *fiber.Ctx) (string, error) {
 	token = strings.Replace(token, "Token ", "", 1)
 
 	return token, nil
+}
+
+func (a *authenticationServiceImpl) AuthRequired() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		token, err := a.GetToken(c)
+		if err != nil {
+			return bcode.ReturnError(c, err)
+		}
+
+		claim, err := ParseToken(token)
+		if err != nil {
+			return bcode.ReturnError(c, err)
+		}
+
+		if claim.GrantType == GrantTypeRefresh {
+			return bcode.ReturnError(c, bcode.ErrInvalidToken)
+		}
+
+		return c.Next()
+	}
 }
 
 func ParseToken(tokenString string) (*model.CustomClaims, error) {
