@@ -3,17 +3,20 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/1ch0/fiber-realworld/pkg/server/utils/log"
 	"github.com/sirupsen/logrus"
+
+	"github.com/bytedance/sonic"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/csrf"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 
 	"github.com/1ch0/fiber-realworld/pkg/server/config"
 	"github.com/1ch0/fiber-realworld/pkg/server/domain/service"
 	"github.com/1ch0/fiber-realworld/pkg/server/infrastructure/mongodb"
 	"github.com/1ch0/fiber-realworld/pkg/server/interfaces/api"
 	"github.com/1ch0/fiber-realworld/pkg/server/utils/container"
-	"github.com/bytedance/sonic"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/1ch0/fiber-realworld/pkg/server/utils/log"
 )
 
 type Server interface {
@@ -45,10 +48,16 @@ func newFiber() *fiber.App {
 		JSONEncoder:   sonic.Marshal,
 		JSONDecoder:   sonic.Unmarshal,
 	})
+
+	return app
+}
+
+func setFiber(app *fiber.App) {
 	//app.Use(recover.New())
 	log.Logger.SetLevel(logrus.DebugLevel)
 	app.Use(logger.New(logger.Config{TimeFormat: "2006-01-02 15:04:05", TimeZone: "Asia/Shanghai"}))
-	return app
+	app.Use(cors.New())
+	app.Use(csrf.New())
 }
 
 func (r *restServer) buildIoCContainer() (err error) {

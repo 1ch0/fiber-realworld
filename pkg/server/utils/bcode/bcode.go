@@ -52,3 +52,15 @@ func New(c *fiber.Ctx, bcode *Bcode) error {
 func ReturnError(c *fiber.Ctx, err error) error {
 	return c.Status(fiber.StatusBadRequest).JSON(Bcode{Code: 400, Message: err.Error()})
 }
+
+func ErrRequestValidation(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusUnprocessableEntity).JSON(errRequestValidation{Errors: errRequestValidationErr{Body: []string{"can't be empty"}}})
+}
+
+type errRequestValidation struct {
+	Errors errRequestValidationErr `json:"errors"`
+}
+
+type errRequestValidationErr struct {
+	Body []string `json:"body"`
+}

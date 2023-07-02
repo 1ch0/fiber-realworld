@@ -40,8 +40,8 @@ const (
 	GrantTypeRefresh = "refresh"
 )
 
-// signedKey is the signed key of JWT
-var signedKey = "fiber-realworld"
+// SignedKey is the signed key of JWT
+var SignedKey = "fiber-realworld"
 
 // AuthenticationService is the service of authentication
 type AuthenticationService interface {
@@ -111,7 +111,7 @@ func (a *authenticationServiceImpl) GenerateJWTToken(email, grantType string, ex
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(signedKey))
+	return token.SignedString([]byte(SignedKey))
 }
 
 func (a *authenticationServiceImpl) RefreshToken(c *fiber.Ctx, refreshToken string) (*apisv1.RefreshTokenResponse, error) {
@@ -197,7 +197,7 @@ func (a *authenticationServiceImpl) AuthRequired() fiber.Handler {
 func ParseToken(tokenString string) (*model.CustomClaims, error) {
 	// 解析令牌字符串
 	token, err := jwt.ParseWithClaims(tokenString, &model.CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(signedKey), nil
+		return []byte(SignedKey), nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse token: %v", err)

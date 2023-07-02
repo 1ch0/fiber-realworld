@@ -1,5 +1,7 @@
 package v1
 
+import "time"
+
 type LoginRequest struct {
 	User struct {
 		Email    string `form:"email" json:"email" binding:"exists,email"`
@@ -39,4 +41,47 @@ type UserRequest struct {
 type UserBase struct {
 	Name  string `json:"username"`
 	Email string `json:"email"`
+}
+
+type User struct {
+	Email    string      `json:"email"`
+	Token    string      `json:"token"`
+	Username string      `json:"username"`
+	Bio      string      `json:"bio"`
+	Image    interface{} `json:"image"`
+}
+
+type Profile struct {
+	Username  string `json:"username"`
+	Bio       string `json:"bio"`
+	Image     string `json:"image"`
+	Following bool   `json:"following"`
+}
+
+type Article struct {
+	Slug           string    `json:"slug"`
+	Title          string    `json:"title"`
+	Description    string    `json:"description"`
+	Body           string    `json:"body"`
+	TagList        []string  `json:"tagList"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
+	Favorited      bool      `json:"favorited"`
+	FavoritesCount int       `json:"favoritesCount"`
+	Author         Author    `json:"author"`
+}
+
+type Author struct {
+	Username  string `json:"username"`
+	Bio       string `json:"bio"`
+	Image     string `json:"image"`
+	Following bool   `json:"following"`
+}
+
+type Comment struct {
+	Id        int       `json:"id"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	Body      string    `json:"body"`
+	Author    Author    `json:"author"`
 }

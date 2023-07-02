@@ -17,6 +17,7 @@ func NewArticleApi() Interface {
 	return &article{}
 }
 
+// Register todo: add middleware for authentication
 func (a *article) Register(app *fiber.App) {
 	api := app.Group(versionPrefix)
 	api.Post("/articles", a.CreateArticle)
