@@ -1,0 +1,5 @@
+bindAddr: 0.0.0.0:8000  # string 用于提供http api的绑定地址
+
+mongo:
+  url:   mongodb://dev:dev@localhost:27017 # string 数据库连接
+  database: fiber-realworld # string 数据库名
